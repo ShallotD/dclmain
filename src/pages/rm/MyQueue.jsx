@@ -72,12 +72,12 @@ const STATUS_CONFIG = {
   "TBO": { color: "#666666", textColor: "white", display: "TBO" },
 
   // Add the new status codes with their user-friendly display names
-  "co_creator_review": { color: INFO_BLUE, textColor: "white", display: "Pending from CO-Creator" },
+  "co_creator_review": { color: WARNING_ORANGE, textColor: "white", display: "Pending from RM" }, // Revived checklists waiting for RM review
   "rm_review": { color: WARNING_ORANGE, textColor: "white", display: "Pending from RM" }, // Matches existing 'Pending from RM' color
   "co_checker_review": { color: INFO_BLUE, textColor: "white", display: "Pending from CO-Checker" },
 
-  // Ensure 'pending' is handled
-  "pending": { color: WARNING_ORANGE, textColor: "white", display: "Pending Submission" },
+  // Ensure 'pending' is handled - newly created checklists waiting for RM review
+  "pending": { color: WARNING_ORANGE, textColor: "white", display: "Pending from RM" },
   "approved": { color: SUCCESS_GREEN, textColor: "white", display: "Approved" },
   "rejected": { color: ERROR_RED, textColor: "white", display: "Rejected" },
 
@@ -96,15 +96,13 @@ const STATUS_CONFIG = {
         .filter((c) => {
           const status = (c.status || "").toLowerCase();
 
-          // 1. Filter out "approved" and "rejected"
-          return status !== "approved" && status !== "rejected";
-        })
-
-        // NEW FILTER ADDED HERE
-        .filter((c) => {
-          const status = (c.status || "").toLowerCase();
-          // 2. Filter out "pending" status
-          return status !== "pending";
+          // Include checklists that should appear in RM's queue:
+          // - "pending": Newly created checklists waiting for submission
+          // - "co_creator_review": Revived checklists waiting for submission  
+          // - "rm_review": Checklists already submitted to RM for review
+          // Exclude "approved" and "rejected" statuses
+          const allowedStatuses = ["pending", "co_creator_review", "rm_review"];
+          return allowedStatuses.includes(status);
         })
 
         // Map and Inject the displayStatus field
